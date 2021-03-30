@@ -4,6 +4,8 @@
   :licence     {:name "EPL-2.0"
                 :url  "https://www.eclipse.org/legal/epl-2.0/"}
 
+  :dependencies [[org.clojure/clojure "1.10.3" :scope "provided"]]
+
   ;; This is only for versioning of the shadow-git-inject artefact on
   ;; Clojars, it is not a dependency of shadow-git-inject.
   :plugins     [[day8/lein-git-inject "0.0.14"]]
