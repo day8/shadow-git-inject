@@ -1,10 +1,10 @@
-[![CI](https://github.com/day8/shadow-git-inject/workflows/ci/badge.svg)](https://github.com/day8/shadow-git-inject/actions?workflow=ci)
+<!-- [![CI](https://github.com/day8/shadow-git-inject/workflows/ci/badge.svg)](https://github.com/day8/shadow-git-inject/actions?workflow=ci)
 [![CD](https://github.com/day8/shadow-git-inject/workflows/cd/badge.svg)](https://github.com/day8/shadow-git-inject/actions?workflow=cd)
-[![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/day8/shadow-git-inject?style=flat)](https://github.com/day8/shadow-git-inject/tags)
-[![Clojars Project](https://img.shields.io/clojars/v/day8/shadow-git-inject.svg)](https://clojars.org/day8/shadow-git-inject)
-[![GitHub issues](https://img.shields.io/github/issues-raw/day8/shadow-git-inject?style=flat)](https://github.com/day8/shadow-git-inject/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/day8/shadow-git-inject)](https://github.com/day8/shadow-git-inject/pulls)
-[![License](https://img.shields.io/github/license/day8/shadow-git-inject.svg)](LICENSE)
+[![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/day8/shadow-git-inject?style=flat)](https://github.com/day8/shadow-git-inject/tags) 
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/day8/shadow-git-inject)](https://github.com/day8/shadow-git-inject/pulls)-->
+[![Clojars Project](https://img.shields.io/clojars/v/day8/shadow-git-inject?style=for-the-badge&logo=clojure&logoColor=fff)](https://clojars.org/day8/shadow-git-inject)
+[![GitHub issues](https://img.shields.io/github/issues-raw/day8/shadow-git-inject?style=for-the-badge)](https://github.com/day8/shadow-git-inject/issues)
+[![License](https://img.shields.io/github/license/day8/shadow-git-inject?style=for-the-badge)](LICENSE)
 
 # shadow-git-inject
 
@@ -12,9 +12,9 @@ shadow-cljs build hook which computes the "version" at build-time - from the amb
 
 Normally, shadow-cljs has no built in concept of versions.
 
-But, when using this build hook, your build configuration will contain a placeholder string, "shadow-git-inject/version" like this: 
+But, when using this build hook, your build configuration will contain a placeholder keyword (or string), :shadow-git-inject/version like this: 
 ```clj
-:compiler-options {:closure-defines {my-app.config/version "shadow-git-inject/version"}}
+:compiler-options {:closure-defines {my-app.config/version :shadow-git-inject/version}}
 ```
 
 Then, at build time, this middleware will:
@@ -71,7 +71,7 @@ Please be aware of the following:
 
 ## The Two Steps
 
-The two-step narative presented above says this build hook:
+The two-step narrative presented above says this build hook:
   1. creates `the computed version` 
   2. replaces a placeholder string within build configuration(s) with `the computed version`
 
@@ -88,20 +88,12 @@ very early in the shadow-cljs build pipeline at the `configure` step.
 The four special strings supported - referred to as `substitution keys` - are: 
 
 
-|   substitution key                    |    example replacement       |
-|---------------------------------------|------------------------------|
-| "shadow-git-inject/version"             |  "12.4.1-2-453a730-SNAPSHOT" |
-| "shadow-git-inject/build-iso-date-time" |  "2019-11-18T00:05:02.273361"|      
-| "shadow-git-inject/build-iso-date-week" |  "2019-W47-2"                |
-| "shadow-git-inject/user-name"           | "Isaac"                      |
-
-***Note #1:***  the substitution keys are strings, even though 
-keywords seem like a more idiomatic choice. Why? Turns out that when you are using the Cursive IDE,
-the 2nd argument to `defproject` (the version!) can't be a keyword for the sibling project day8/lein-git-inject. 
-Only a string can go there because Cursive does its own inspection of your `project.clj` 
-independently of Lein and it doesn't like a keyword there, as the 2nd argument.
-So string keys were necessary. And there is less cognitive load if there 
-is only one way to do something - so we reluctantly said "no" to allowing keyword keys too.
+|   substitution key                     |    example replacement       |
+|----------------------------------------|------------------------------|
+| :shadow-git-inject/version             | "12.4.1-2-453a730-SNAPSHOT"  |
+| :shadow-git-inject/build-iso-date-time | "2019-11-18T00:05:02.273361" |      
+| :shadow-git-inject/build-iso-date-week | "2019-W47-2"                 |
+| :shadow-git-inject/user-name           | "Isaac"                      |
 
 ## Embedding Build-Time Values In Your App
 
@@ -113,7 +105,7 @@ be achieved in an automated, DRY way.
 The trick is to place the substitution keys into specific places within the build configuration - ones which control 
 the actions of the ClojureScript compiler. We want to take advantage of the [`:closure-defines` feature](https://clojurescript.org/reference/compiler-options#closure-defines) feature of the ClojureScript complier which permits us to "set" values for `defs` at compile time.
 
-Below, the Annotated Example section demonstrates how to achive this outcome using shadow-cljs.
+Below, the Annotated Example section demonstrates how to achieve this outcome using shadow-cljs.
 
 
 ## Configuration
