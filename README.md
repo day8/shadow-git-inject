@@ -80,12 +80,12 @@ While that's true, it is a simplification. The real steps are:
   2. this build hook will perform a search and replace across ***all the `EDN`*** in 
 the current build's configuration block, looking for four special string values and, where they are found, it will replace them with the associated computed value from step 1. 
 
-So, the special string "shadow-git-inject/version" will be replaced ***anywhere*** it is found within the build configuration EDN.
+So, the special keyword :shadow-git-inject/version will be replaced ***anywhere*** it is found within the build configuration EDN.
 
 When you consider this second step, keep in mind that this build hook runs 
 very early in the shadow-cljs build pipeline at the `configure` step. 
 
-The four special strings supported - referred to as `substitution keys` - are: 
+The four special keywords supported - referred to as `substitution keys` - are: 
 
 
 |   substitution key                     |    example replacement       |
@@ -173,10 +173,6 @@ The regex you supply has two jobs:
 Here's how to write your `shadow-cljs-edn` ... 
 
 ```clojure
-
-;; On the next line, note that the version (2nd argument of defproject) is a 
-;; `Substitution Key` which will be replaced by `the computed version` which is
-;; built from `The Ambient Git Context`, using `The Two-Rule Method`.
 {:dependencies [[day8/shadow-git-inject "0.0.1"]] ;; <--- you must include this dependency
 
  :builds {:app {:target :browser
