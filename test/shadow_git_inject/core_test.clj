@@ -4,13 +4,11 @@
       [shadow-git-inject.core :refer [hook]]))
 
 (deftest hook-test
-   (let [config   {:version     :shadow-git-inject/version
-                   :builds {:app {:target           :browser
-                                  :compiler-options {:closure-defines {'app/version :shadow-git-inject/version}}}}
-                   :timestamp   :shadow-git-inject/build-iso-date-time
-                   :username    :shadow-git-inject/username}
-         config' (hook config)]
-        (is (string? (:version config')))
-        (is (string? (get-in config' [:builds :app :compiler-options :closure-defines 'app/version])))
-        (is (string? (:timestamp config')))
-        (is (string? (:username config')))))
+   (let [build-state {:target           :browser
+                      :compiler-options {:closure-defines {'app/version   :shadow-git-inject/version
+                                                           'app/timestamp :shadow-git-inject/build-iso-date-time
+                                                           'app/username  :shadow-git-inject/username}}}
+         build-state' (hook build-state)]
+        (is (string? (get-in build-state' [:compiler-options :closure-defines 'app/version])))
+        (is (string? (get-in build-state' [:compiler-options :closure-defines 'app/timestamp])))
+        (is (string? (get-in build-state' [:compiler-options :closure-defines 'app/username])))))
