@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+## [0.0.3] - 2021-04-01
+
+#### Fixed
+
+- Remove debugging output leftover from last change.
+
+## [0.0.2] - 2021-04-01
+
 #### Changed
 
 - Only walk `:closure-defines` in `build-state` (i.e. the config). This fixes
