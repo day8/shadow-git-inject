@@ -17,7 +17,7 @@ But, when using this build hook, your build configuration will contain a placeho
 :compiler-options {:closure-defines {my-app.config/version :shadow-git-inject/version}}
 ```
 
-Then, at build time, this middleware will:
+Then, at build time, this build hook will:
    1. apply ***a two-rule method*** to compute the "version" from ***the ambient git context***. We refer to this as `the computed version`.
    2. replace the placeholder string with `the computed version`
  
@@ -183,17 +183,15 @@ Here's how to write your `shadow-cljs-edn` ...
                  
 		:build-hooks [(shadow-git-inject.core/hook)] ;; <--- you must include this build hook
 
-		  ;; Embedding
-		  ;; If you are using the shadow-clj compiler and lein-shadow, the shadow-cljs 
-		  ;; configuration is put here in project.clj. Below is an example of how to 
-		  ;; combine this middleware with a `:clojure-define` in order to 
+		  ;; Below is an example of how to 
+		  ;; combine this build hook with a `:clojure-define` in order to 
 		  ;; inject build-time values into your application, for later run-time use.
 		  ;; 
-		  ;; You'll notice the use of the substitution key "shadow-git-inject/version".  
-		  ;; At build time, this middleware will replace that keyword with `the computed version`.
+		  ;; You'll notice the use of the substitution key :shadow-git-inject/version.  
+		  ;; At build time, this build hook will replace that keyword with `the computed version`.
 		  ;; In turn, that value is used within a `:clojure-define` to bind it
 		  ;; to a var, via a `def` in your code (called `version` within the namespace `some.namespace`). 
-		:compiler-options {:closure-defines {some.namespace.version  "shadow-git-inject/version"}}
+		:compiler-options {:closure-defines {some.namespace.version  :shadow-git-inject/version}}
 
 	        ;; Optional - see the `Configuration` section for explanation
 	        :git-inject {
