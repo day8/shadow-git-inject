@@ -150,7 +150,7 @@ OR
 :git-inject {
   ;; Will only be true if IGNORE_DIRTY environment variable is the string "true"
   ;; If the environment variable is not found, defaults to "false"
-  :ignore-dirty? :env/ignore_dirty
+  :ignore-dirty? #shadow/env "IGNORE_DIRTY"
 }
 ```
 
