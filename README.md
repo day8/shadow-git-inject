@@ -93,6 +93,17 @@ The four special keywords supported - referred to as `substitution keys` - are:
 | :shadow-git-inject/build-iso-date-week | "2019-W47-2"                 |
 | :shadow-git-inject/user-name           | "Isaac"                      |
 
+For performance, only certain parts of the shadow-cljs configuration are processed:
+
+- `[:builds :* :closure-defines]`
+- `[:builds :* :compiler-options :closure-defines]`
+- `[:builds :* :dev :closure-defines]`
+- `[:builds :* :dev :compiler-options :closure-defines]`
+- `[:builds :* :release :closure-defines]`
+- `[:builds :* :release :compiler-options :closure-defines]`
+
+If you have a use case for injecting values in a part of the config that is not listed above, please raise an issue.
+
 ## Embedding Build-Time Values In Your App
 
 This build hook provides a way

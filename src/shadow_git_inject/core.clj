@@ -172,30 +172,40 @@
    :shadow-git-inject/version             git-status-to-version
    :shadow-git-inject/username            (fn [_] (System/getProperty "user.name"))})
 
+(defn inject
+  [state config]
+  (walk/prewalk
+     (fn [x]
+       (reduce-kv
+         (fn [ret k f]
+           (cond
+             (keyword? x)
+             (if (= x k)
+               (f config)
+               ret)
+
+             (string? x)
+             (let [s (str (namespace k) "/" (name k))]
+               (if (string/includes? x s)
+                 (string/replace x (re-pattern s) (f config))
+                 ret))
+
+             :default
+             ret))
+         x
+         x->f))
+     state))
+
 (defn hook
   {:shadow.build/stage :configure}
   [{:keys [git-inject]
     :as   build-state} & args]
-  (let [config       (merge default-config git-inject)
-        build-state' (walk/prewalk
-                       (fn [x]
-                         (reduce-kv
-                           (fn [ret k f]
-                             (cond
-                               (keyword? x)
-                               (if (= x k)
-                                 (f config)
-                                 ret)
-
-                               (string? x)
-                               (let [s (str (namespace k) "/" (name k))]
-                                 (if (string/includes? x s)
-                                   (string/replace x (re-pattern s) (f config))
-                                   ret))
-
-                               :default
-                               ret))
-                           x
-                           x->f))
-                       build-state)]
-    build-state'))
+  (let [config (merge default-config git-inject)]
+    (prn (keys build-state))
+    (-> build-state
+        (update :closure-defines inject config)
+        (update-in [:compiler-options :closure-defines] inject config)
+        (update-in [:dev :closure-defines] inject config)
+        (update-in [:dev :compiler-options :closure-defines] inject config)
+        (update-in [:release :closure-defines] inject config)
+        (update-in [:release :compiler-options :closure-defines] inject config))))
