@@ -8,18 +8,27 @@
 
 # shadow-git-inject
 
-This is a shadow-cljs build hook. At build time, it will compute an application's "version" from the ambient git context (think latest tag).
+This is a shadow-cljs "build hook" which processes your build "configuration". 
 
-When using this build hook, your build configuration is expected to contain a placeholder keyword (or string), `:shadow-git-inject/version` like this: 
+At build time, it will compute an application's "version" from the "ambient git context" (think latest tag) 
+so that it can be "injected" into your application. 
+
+This hook assumes that you tag your releases, and that you'd like an automatic way of injecting the most recent tag into your application.
+
+## Quick Start
+
+Your `shadow-cljs` build configuration will look like this: 
 ```clj
 :compiler-options {:closure-defines {my-app.config/version :shadow-git-inject/version}}
 ```
 
+You'll notice that it contains a placeholder keyword for the current versio: `:shadow-git-inject/version`.
+
 At build time, this build hook will:
    1. apply ***a two-rule method*** to compute the "version" from ***the ambient git context***. We refer to this as `the computed version`.
-   2. replace the placeholder string/keyword with this `the computed version`
+   2. replace the placeholder keyword with `the computed version`
  
-So, it facilitates embedding `the computed version`
+Because this version is used within the `closure-define` section, it facilitates embedding `the computed version`
 into your ClojureScript application, making it readily available at run-time for purposes like logging.
 
 ## The Ambient Git Context
