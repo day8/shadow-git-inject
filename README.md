@@ -22,14 +22,16 @@ Your `shadow-cljs` build configuration will look like this:
 :compiler-options {:closure-defines {my-app.config/version :shadow-git-inject/version}}
 ```
 
-You'll notice that it contains a placeholder keyword for the current versio: `:shadow-git-inject/version`.
+You'll notice that it contains a placeholder keyword for the current version: `:shadow-git-inject/version`.
 
 At build time, this build hook will:
    1. apply ***a two-rule method*** to compute the "version" from ***the ambient git context***. We refer to this as `the computed version`.
    2. replace the placeholder keyword with `the computed version`
  
-Because this version is used within the `closure-define` section, it facilitates embedding `the computed version`
-into your ClojureScript application, making it readily available at run-time for purposes like logging.
+Because this version is used within the `closure-define` section,
+it allows you to embed `the computed version` into your ClojureScript
+application (into the var `my-app.config/version` in the example config above),
+making it readily available at run-time for purposes like logging.
 
 ## The Ambient Git Context
 
