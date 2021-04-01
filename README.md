@@ -190,7 +190,7 @@ The regex you supply has two jobs:
   
 ## An Annotated Example
 
-Here's how to write your `shadow-cljs-edn` ... 
+Here's how to write your `shadow-cljs.edn` ... 
 
 ```clojure
 {:dependencies [[day8/shadow-git-inject "0.0.1"]] ;; <--- you must include this dependency
@@ -207,7 +207,7 @@ Here's how to write your `shadow-cljs-edn` ...
 		  ;; At build time, this build hook will replace that keyword with `the computed version`.
 		  ;; In turn, that value is used within a `:clojure-define` to bind it
 		  ;; to a var, via a `def` in your code (called `version` within the namespace `some.namespace`). 
-		:compiler-options {:closure-defines {some.namespace.version  :shadow-git-inject/version}}
+		:compiler-options {:closure-defines {some.namespace/version  :shadow-git-inject/version}}
 
 	        ;; Optional - see the `Configuration` section for explanation
 	        :git-inject {
