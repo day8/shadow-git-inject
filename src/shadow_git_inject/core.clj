@@ -201,10 +201,4 @@
   [{:keys [git-inject]
     :as   build-state} & args]
   (let [config (merge default-config git-inject)]
-    (-> build-state
-        (update :closure-defines inject config)
-        (update-in [:compiler-options :closure-defines] inject config)
-        (update-in [:dev :closure-defines] inject config)
-        (update-in [:dev :compiler-options :closure-defines] inject config)
-        (update-in [:release :closure-defines] inject config)
-        (update-in [:release :compiler-options :closure-defines] inject config))))
+    (update-in build-state [:compiler-options :closure-defines] inject config)))

@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.0.4] - 2021-04-01
+
+#### Fixed
+
+- Remove unnecessary update-ins. No user visible changes. See [#1](https://github.com/day8/shadow-git-inject/issues/1).
+
 ## [0.0.3] - 2021-04-01
 
 #### Fixed
