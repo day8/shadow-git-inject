@@ -193,7 +193,7 @@ The regex you supply has two jobs:
 Here's how to write your `shadow-cljs.edn` ... 
 
 ```clojure
-{:dependencies [[day8/shadow-git-inject "0.0.1"]] ;; <--- you must include this dependency
+{:dependencies [[day8/shadow-git-inject "0.0.3"]] ;; <--- include hook dependency (see https://clojars.org/day8/shadow-git-inject)
 
  :builds {:app {:target :browser
                  
