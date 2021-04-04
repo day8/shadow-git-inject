@@ -167,7 +167,7 @@ OR
 
 #### :version-pattern
 
-A regex which is used to differentiate between `version tags` and other `tags`. If this regex
+A regex (as string) which is used to differentiate between `version tags` and other `tags`. If this regex
 matches, then the tag is assumed to be a `version tag`, otherwise the tag will be ignored. 
 
 Defaults to `"^v(\\d+\\.\\d+\\.\\d+)$"`
@@ -187,7 +187,13 @@ The regex you supply has two jobs:
   :version-pattern  "^version/(.*)$" 
 }
 ```
-  
+
+**Note #1:** We use [`re-pattern`](https://clojuredocs.org/clojure.core/re-pattern) to run the string into a regex. 
+
+**Note #2:**  Because you supply a string and not a regex, be careful to use `\\` where normally you'd just use `\` in a regex. 
+
+**Note #3:**  Why a string and not a regex?  Because EDN doesn't accomodate regex. 
+
 ## An Annotated Example
 
 Here's how to write your `shadow-cljs.edn` ... 
