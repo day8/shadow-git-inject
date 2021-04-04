@@ -13,8 +13,8 @@
 (def default-config
   "The default configuration values."
   {:git               "git"
-   :describe-pattern  #"(?<tag>.*)-(?<ahead>\d+)-g(?<ref>[0-9a-f]*)(?<dirty>(-dirty)?)"
-   :version-pattern   #"^v(\d+\.\d+\.\d+)$"})
+   :describe-pattern  "(?<tag>.*)-(?<ahead>\\d+)-g(?<ref>[0-9a-f]*)(?<dirty>(-dirty)?)"
+   :version-pattern   "^v(\\d+\\.\\d+\\.\\d+)$"})
 
 (defmacro let-groups
   "Let for binding groups out of a j.u.r.Pattern j.u.r.Matcher."
@@ -156,7 +156,7 @@
       (if-not (string? tag)
         ;; If git status is nil (e.g. IntelliJ evaluating project.clj):
         "git-version-tag-not-found"
-        (let [[_ version] (re-find version-pattern tag)]
+        (let [[_ version] (re-find (re-pattern version-pattern) tag)]
           (if (and (not ahead?)
                    (or ignore-dirty?' (not dirty?)))
             ;; If this is a release version:

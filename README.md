@@ -170,7 +170,7 @@ OR
 A regex which is used to differentiate between `version tags` and other `tags`. If this regex
 matches, then the tag is assumed to be a `version tag`, otherwise the tag will be ignored. 
 
-Defaults to `#"^v(\d+\.\d+\.\d+)$"`
+Defaults to `"^v(\\d+\\.\\d+\\.\\d+)$"`
 
 When designing the textual structure for your "version tags", remember that 
 git tags are git references and that there are rules about well formedness. 
@@ -184,7 +184,7 @@ The regex you supply has two jobs:
     
 ```clj
 :git-inject {
-  :version-pattern  #"^version\/(.*)$" 
+  :version-pattern  "^version/(.*)$" 
 }
 ```
   
@@ -197,22 +197,23 @@ Here's how to write your `shadow-cljs.edn` ...
 
  :builds {:app {:target :browser
                  
-		:build-hooks [(shadow-git-inject.core/hook)] ;; <--- you must include this build hook
+		        :build-hooks [(shadow-git-inject.core/hook)] ;; <--- you must include this build hook
 
-		  ;; Below is an example of how to 
-		  ;; combine this build hook with a `:clojure-define` in order to 
-		  ;; inject build-time values into your application, for later run-time use.
-		  ;; 
-		  ;; You'll notice the use of the substitution key :shadow-git-inject/version.  
-		  ;; At build time, this build hook will replace that keyword with `the computed version`.
-		  ;; In turn, that value is used within a `:clojure-define` to bind it
-		  ;; to a var, via a `def` in your code (called `version` within the namespace `some.namespace`). 
-		:compiler-options {:closure-defines {some.namespace/version  :shadow-git-inject/version}}
+                ;; Below is an example of how to 
+                ;; combine this build hook with a `:clojure-define` in order to 
+                ;; inject build-time values into your application, for later run-time use.
+                ;; 
+                ;; You'll notice the use of the substitution key :shadow-git-inject/version.  
+                ;; At build time, this build hook will replace that keyword with `the computed version`.
+                ;; In turn, that value is used within a `:clojure-define` to bind it
+                ;; to a var, via a `def` in your code (called `version` within the namespace `some.namespace`). 
+		        :compiler-options 
+                {:closure-defines {some.namespace/version  :shadow-git-inject/version}}
 
-	        ;; Optional - see the `Configuration` section for explanation
-	        :git-inject {
-	          :version-pattern  #"^version\/(.*)$" 
-	          :ignore-dirty? true}}}}
+                ;; Optional - see the `Configuration` section for explanation
+                :git-inject
+                {:version-pattern "^version/(.*)$" 
+                 :ignore-dirty?   true}}}}
 ```
 
 

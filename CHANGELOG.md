@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+#### Fixed
+
+- Use strings instead of regex literals for patterns in config. Fixes [#2](https://github.com/day8/shadow-git-inject/issues/2).
+Thanks to [@schpaa](https://github.com/schpaa) for reporting the issue.
+
 ## [0.0.4] - 2021-04-01
 
 #### Fixed
