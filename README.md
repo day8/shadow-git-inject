@@ -170,7 +170,7 @@ OR
 A string containing the regex which is used to differentiate between `version tags` and other `tags`. If the regex
 matches a tag, then that tag is assumed to be a `version tag`, otherwise the tag will be ignored. 
 
-Defaults to `"^v(\\d+\\.\\d+\\.\\d+)$"`
+Defaults to `"^v(\\d+\\.\\d+\\.\\d+)$"` which matches tags like `v1.0.0` and `v12.3.99`.
 
 When designing the textual structure for your "version tags", remember that 
 git tags are git references and that there are rules about well formedness. 
