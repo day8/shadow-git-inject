@@ -167,8 +167,8 @@ OR
 
 #### :version-pattern
 
-A regex (as string) which is used to differentiate between `version tags` and other `tags`. If this regex
-matches, then the tag is assumed to be a `version tag`, otherwise the tag will be ignored. 
+A string containing the regex which is used to differentiate between `version tags` and other `tags`. If the regex
+matches a tag, then that tag is assumed to be a `version tag`, otherwise the tag will be ignored. 
 
 Defaults to `"^v(\\d+\\.\\d+\\.\\d+)$"`
 
@@ -188,9 +188,9 @@ The regex you supply has two jobs:
 }
 ```
 
-**Note #1:** We use [`re-pattern`](https://clojuredocs.org/clojure.core/re-pattern) to run the string into a regex. 
+**Note #1:** This build hook uses [`re-pattern`](https://clojuredocs.org/clojure.core/re-pattern) to turn the string into a regex. 
 
-**Note #2:**  Because you supply a string and not a regex, be careful to use `\\` where normally you'd just use `\` in a regex. 
+**Note #2:**  Because you supply a string and not a regex, be careful to use `\\` where normally you could just use `\` in a regex. 
 
 **Note #3:**  Why a string and not a regex?  Because EDN doesn't accomodate regex. 
 
@@ -203,7 +203,8 @@ Here's how to write your `shadow-cljs.edn` ...
 
  :builds {:app {:target :browser
                  
-		        :build-hooks [(shadow-git-inject.core/hook)] ;; <--- you must include this build hook
+		:build-hooks 
+		[(shadow-git-inject.core/hook)] ;; <--- you must include this build hook
 
                 ;; Below is an example of how to 
                 ;; combine this build hook with a `:clojure-define` in order to 
@@ -213,8 +214,8 @@ Here's how to write your `shadow-cljs.edn` ...
                 ;; At build time, this build hook will replace that keyword with `the computed version`.
                 ;; In turn, that value is used within a `:clojure-define` to bind it
                 ;; to a var, via a `def` in your code (called `version` within the namespace `some.namespace`). 
-		        :compiler-options 
-                {:closure-defines {some.namespace/version  :shadow-git-inject/version}}
+		:compiler-options        
+		{:closure-defines {some.namespace/version  :shadow-git-inject/version}}
 
                 ;; Optional - see the `Configuration` section for explanation
                 :git-inject
