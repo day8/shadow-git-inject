@@ -198,7 +198,7 @@
 
 (defn hook
   {:shadow.build/stage :configure}
-  [{:keys [git-inject]
-    :as   build-state} & args]
-  (let [config (merge default-config git-inject)]
+  [build-state & args]
+  (let [git-inject (get-in build-state [:shadow.build/config :git-inject])
+        config (merge default-config git-inject)]
     (update-in build-state [:compiler-options :closure-defines] inject config)))
