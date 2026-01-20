@@ -44,43 +44,17 @@
         :else
         (throw (IllegalArgumentException. (str "shadow-git-inject " label " requires a string or a java.util.regex.Pattern!")))))
 
-(defn initial-commit
-  [{:keys [git] :as config}]
-  (let [{:keys [exit out] :as child} (apply sh [git "rev-list" "--max-parents=0" "HEAD"])]
-    (if-not (= exit 0)
-      (binding [*out* *err*]
-        (printf "Warning: shadow-git-inject git exited %d\n%s\n\n"
-                exit child)
-        (.flush *out*)
-        nil)
-      (first (string/split-lines (string/trim out))))))
-
-(defn parse-tags
-  [config out]
-  (reduce
-    (fn [ret line]
-      (if-let [[_ decorations] (re-find #"[0-9a-fA-F]{7} \(([^)]*)\) .*" line)]
-        (reduce
-          (fn [ret decoration]
-            (if-let [[_ tag] (re-find #"tag: ([0-9a-zA-Z`!@#$%&()-_+={}|;'<>,./]+)" decoration)]
-              (conj ret tag)
-              ret))
-          ret
-          (string/split decorations #","))
-        ret))
-    []
-    (string/split-lines (string/trim out))))
-
 (defn tags
+  "Returns all tags merged into HEAD, ordered by commit date (most recent first)."
   [{:keys [git] :as config}]
-  (let [{:keys [exit out] :as child} (apply sh [git "log" "--oneline" "--decorate" "--simplify-by-decoration" "--ancestry-path" (str (initial-commit config) "..HEAD")])]
+  (let [{:keys [exit out] :as child} (apply sh [git "tag" "--merged" "HEAD" "--sort=-committerdate"])]
     (if-not (= exit 0)
       (binding [*out* *err*]
         (printf "Warning: shadow-git-inject git exited %d\n%s\n\n"
                 exit child)
         (.flush *out*)
         nil)
-      (parse-tags config out))))
+      (string/split-lines (string/trim out)))))
 
 (defn latest-version-tag
   [{:keys [version-pattern] :as config}]
