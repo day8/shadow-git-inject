@@ -7,17 +7,18 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       # Source: https://github.com/day8/dockerfile-for-dev-ci-image
-      image: ghcr.io/day8/dockerfile-for-dev-ci-image/core:2 
+      image: ghcr.io/day8/dockerfile-for-dev-ci-image/core:2
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           # All of the Git history is required for day8/lein-git-inject to determine the version string.
           fetch-depth: 0
       - name: Maven cache
-        uses: actions/cache@v2
+        id: maven-cache
+        uses: actions/cache@v4
         with:
           path: /root/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('project.clj', '.github/workflows/**') }}
@@ -28,11 +29,11 @@ jobs:
       - run: lein -o test
         if: steps.maven-cache.outputs.cache-hit == 'true'
       - name: Slack notification
-        uses: homoluctus/slatify@v2.0.1
+        uses: homoluctus/slatify@v3.0.0
         if: failure() || cancelled()
         with:
           type: ${{ job.status }}
-          job_name: lein-git-inject Tests
+          job_name: shadow-git-inject Tests
           channel: '#oss-robots'
           url: ${{ secrets.SLACK_WEBHOOK_URL }}
           commit: true
