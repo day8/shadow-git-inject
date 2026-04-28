@@ -8,87 +8,102 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-22.04
-    container:
-      # Source: https://github.com/day8/dockerfile-for-dev-ci-image
-      image: ghcr.io/day8/dockerfile-for-dev-ci-image/core:2
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           # All of the Git history is required for day8/lein-git-inject to determine the version string.
           fetch-depth: 0
+
+      - name: Setup java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@e6e77cdf6873b7af18609cf29f24bee054c5be72 # 13.5
+        with:
+          lein: 'latest'
+
       - name: Maven cache
         id: maven-cache
-        uses: actions/cache@v4
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
         with:
-          path: /root/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj', '.github/workflows/**') }}
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - run: lein test
+
+      - name: Run lein test
         if: steps.maven-cache.outputs.cache-hit != 'true'
-      - run: lein -o test
+        run: lein test
+
+      - name: Run lein -o test
         if: steps.maven-cache.outputs.cache-hit == 'true'
+        run: lein -o test
+
       - name: Slack notification
-        uses: homoluctus/slatify@v3.0.0
         if: failure() || cancelled()
+        uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 # v3
         with:
-          type: ${{ job.status }}
-          job_name: shadow-git-inject Tests
-          channel: '#oss-robots'
-          url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          commit: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          # yamllint disable-line rule:line-length
+          payload: '{"channel":"#oss-robots","text":"shadow-git-inject Tests ${{ job.status }}\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|`${{ github.sha }}`> · <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}'
+
   release:
     name: Release
     needs: test
     runs-on: ubuntu-22.04
-    container:
-      # Source: https://github.com/day8/dockerfile-for-dev-ci-image
-      image: ghcr.io/day8/dockerfile-for-dev-ci-image/core:2
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           # All of the Git history is required for day8/lein-git-inject to determine the version string.
           fetch-depth: 0
+
+      - name: Setup java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@e6e77cdf6873b7af18609cf29f24bee054c5be72 # 13.5
+        with:
+          lein: 'latest'
+
       - name: Maven cache
         id: maven-cache
-        uses: actions/cache@v4
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
         with:
-          path: /root/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj', '.github/workflows/**') }}
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+
       - name: Run lein release
         if: steps.maven-cache.outputs.cache-hit != 'true'
         env:
           CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
           CLOJARS_TOKEN: ${{ secrets.CLOJARS_TOKEN }}
-          GITHUB_USERNAME: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          lein release
+        run: lein release
+
       - name: Run lein -o release
         if: steps.maven-cache.outputs.cache-hit == 'true'
         env:
           CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
           CLOJARS_TOKEN: ${{ secrets.CLOJARS_TOKEN }}
-          GITHUB_USERNAME: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          lein -o release
+        run: lein -o release
+
       - name: Slack notification
-        uses: homoluctus/slatify@v3.0.0
         if: always()
+        uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 # v3
         with:
-          type: ${{ job.status }}
-          job_name: shadow-git-inject Release
-          channel: '#oss-robots'
-          url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          commit: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          # yamllint disable-line rule:line-length
+          payload: '{"channel":"#oss-robots","text":"shadow-git-inject Release ${{ job.status }}\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|`${{ github.sha }}`> · <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}'
