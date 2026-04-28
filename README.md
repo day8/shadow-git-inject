@@ -61,16 +61,18 @@ This build hook creates `the computed version` from these four "ambient" values 
 
 ## The Latest Tag
 
-So far, we have said `the computed version` is created using the "latest tag". While that is often true, it is not the whole story, which is acually as follows:
-  1. what's used is the "latest version tag" found in the commit history  ("latest version tag" vs "latest tag")
+So far, we have said `the computed version` is created using the "latest tag". While that is often true, it is not the whole story, which is actually as follows:
+  1. what's used is the most recently created "version tag" that is reachable from `HEAD`
   2. where a "version tag" is a tag with a specific textual structure
-  3. by default, that textual structure must match the regex: `#"^v(\d+\.\d+\.\d+)$"`
+  3. by default, that textual structure must match the regex: `"^v(\d+\.\d+\.\d+)$"`
   4. so, one of these "version tags" might look like: `v1.2.3`  (the string `"v"` followed by a semver, `"N.N.N"`)
   5. tags which do not match the regex are ignored (which means you can use tags for other purposes, not just for nominating versions)
   6. you can override this default regex with one of your own which will recognise an alternative textual structure (see how below)
   7. you'll notice that the regex has a capturing group which extracts just the semver part: "N.N.N". If you provide your own regex, it must contain a single capturing group which isolates that part of the tag to be used in `the computed version`.
-  
-So, this build hook will traverse backwards through the history of the current commit looking for a tag which has the right structure (matches the regex), and when it finds one, it is THAT tag which is used to create `the computed version` - it is that tag against which the "ahead count" will be calculated, etc.
+
+So, this build hook collects all tags reachable from `HEAD`, filters them by the version-pattern regex, and selects the most recently created match. That selected tag is then used to create `the computed version` — it is also the tag against which the "ahead count" will be calculated.
+
+"Most recently created" is determined by git's `creatordate` field, which works for both annotated and lightweight tags. In typical workflows where version tags are created in monotonically increasing order, this is the same as "highest version number". The two diverge if a tag is created retroactively against an older commit (e.g. a hotfix backport tagged after a newer release): the retroactive tag wins because it was created last.
 
 ## Sharp Edges
   
@@ -100,20 +102,13 @@ The four special keywords supported - referred to as `substitution keys` - are:
 |   substitution key                     |    example replacement       |
 |----------------------------------------|------------------------------|
 | :shadow-git-inject/version             | "12.4.1-2-453a730-SNAPSHOT"  |
-| :shadow-git-inject/build-iso-date-time | "2019-11-18T00:05:02.273361" |      
-| :shadow-git-inject/build-iso-date-week | "2019-W47-2"                 |
-| :shadow-git-inject/user-name           | "Isaac"                      |
+| :shadow-git-inject/build-iso-date-time | "2019-11-18T00:05:02.273361" |
+| :shadow-git-inject/build-iso-week-date | "2019-W47-2"                 |
+| :shadow-git-inject/username            | "Isaac"                      |
 
-For performance, only certain parts of the shadow-cljs configuration are processed:
+For performance, the build hook only walks the `:closure-defines` map within `:compiler-options` of the resolved build configuration. At the `:configure` stage, shadow-cljs has already merged any `:dev` / `:release` overrides, so substitution keys placed inside those sections are also processed.
 
-- `[:builds :* :closure-defines]`
-- `[:builds :* :compiler-options :closure-defines]`
-- `[:builds :* :dev :closure-defines]`
-- `[:builds :* :dev :compiler-options :closure-defines]`
-- `[:builds :* :release :closure-defines]`
-- `[:builds :* :release :compiler-options :closure-defines]`
-
-If you have a use case for injecting values in a part of the config that is not listed above, please raise an issue.
+If you have a use case for injecting values in a part of the config that isn't covered, please raise an issue.
 
 ## Embedding Build-Time Values In Your App
 
@@ -139,17 +134,19 @@ A map of configuration options can, optionally, be added to the build configurat
 		   }}}
 ```
 
-The two configuration options are:
-  -  `:ignore-dirty?` 
-  -  `:version-pattern` 
-  
+The configuration options are:
+  -  `:ignore-dirty?`
+  -  `:version-pattern`
+  -  `:describe-pattern` *(advanced)*
+  -  `:git` *(advanced)*
+
 #### :ignore-dirty?
 
-A boolean value which specifies if the dirty state of the repo should be ignored when calculating the version. 
+A boolean value which specifies if the dirty state of the repo should be ignored when calculating the version.
 
 Defaults to `false`.
 
-Can be supplied as an explicit boolean or via an environment variable as the string "true" or "false".
+Can be supplied as an explicit boolean, or as a keyword in the `env` namespace pointing at an environment variable whose value is the string `"true"` or `"false"`.
 
 ```clj
 :git-inject {
@@ -159,9 +156,10 @@ Can be supplied as an explicit boolean or via an environment variable as the str
 OR
 ```clj
 :git-inject {
-  ;; Will only be true if IGNORE_DIRTY environment variable is the string "true"
-  ;; If the environment variable is not found, defaults to "false"
-  :ignore-dirty? #shadow/env "IGNORE_DIRTY"
+  ;; Will only be true if the IGNORE_DIRTY environment variable is the
+  ;; string "true". If the environment variable is not found, defaults
+  ;; to false.
+  :ignore-dirty? :env/IGNORE_DIRTY
 }
 ```
 
@@ -188,18 +186,28 @@ The regex you supply has two jobs:
 }
 ```
 
-**Note #1:** This build hook uses [`re-pattern`](https://clojuredocs.org/clojure.core/re-pattern) to turn the string into a regex. 
+**Note #1:** This build hook uses [`re-pattern`](https://clojuredocs.org/clojure.core/re-pattern) to turn the string into a regex.
 
-**Note #2:**  Because you supply a string and not a regex, be careful to use `\\` where normally you could just use `\` in a regex. 
+**Note #2:**  Because you supply a string and not a regex, be careful to use `\\` where normally you could just use `\` in a regex.
 
-**Note #3:**  Why a string and not a regex?  Because EDN doesn't accomodate regex. 
+**Note #3:**  Why a string and not a regex?  Because EDN doesn't accomodate regex.
+
+#### :describe-pattern *(advanced)*
+
+A string containing the regex used to parse the output of `git describe --long`. It must contain four named capturing groups: `tag`, `ahead`, `ref`, and `dirty`.
+
+Defaults to `"(?<tag>.*)-(?<ahead>\\d+)-g(?<ref>[0-9a-f]*)(?<dirty>(-dirty)?)"`. Only override this if you know what you're doing — most users should never touch it.
+
+#### :git *(advanced)*
+
+The `git` executable to invoke. Defaults to `"git"` (resolved via `PATH`). Set this to an absolute path if `git` is not on `PATH` in your build environment.
 
 ## An Annotated Example
 
 Here's how to write your `shadow-cljs.edn` ... 
 
 ```clojure
-{:dependencies [[day8/shadow-git-inject "0.0.4"]] ;; <--- include hook dependency (see https://clojars.org/day8/shadow-git-inject)
+{:dependencies [[day8/shadow-git-inject "0.0.10"]] ;; <--- include hook dependency (see https://clojars.org/day8/shadow-git-inject)
 
  :builds {:app {:target :browser
                  
