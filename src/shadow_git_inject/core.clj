@@ -45,9 +45,14 @@
         (throw (IllegalArgumentException. (str "shadow-git-inject " label " requires a string or a java.util.regex.Pattern!")))))
 
 (defn tags
-  "Returns all tags merged into HEAD, ordered by commit date (most recent first)."
+  "Returns all tags merged into HEAD, ordered by creation date (most recent first).
+
+  Uses --sort=-creatordate (not -committerdate) because committerdate is empty
+  for annotated tag objects, which sorts every annotated tag below every
+  lightweight tag regardless of when it was made. creatordate is documented as
+  the right field for sorting a mix of annotated and lightweight tags."
   [{:keys [git] :as config}]
-  (let [{:keys [exit out] :as child} (apply sh [git "tag" "--merged" "HEAD" "--sort=-committerdate"])]
+  (let [{:keys [exit out] :as child} (apply sh [git "tag" "--merged" "HEAD" "--sort=-creatordate"])]
     (if-not (= exit 0)
       (binding [*out* *err*]
         (printf "Warning: shadow-git-inject git exited %d\n%s\n\n"

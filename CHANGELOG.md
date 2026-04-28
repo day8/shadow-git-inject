@@ -2,6 +2,11 @@
 
 #### Fixed
 
+- Sort tags by `creatordate` instead of `committerdate` when picking the latest version
+  tag. `committerdate` is empty for annotated tag objects, which caused every annotated
+  tag to sort below every lightweight tag — so a stale lightweight tag would win over
+  the most recent annotated release tag, and the wrong version would be injected at
+  build time. Regression introduced in 0.0.6.
 - Use strings instead of regex literals for patterns in config. Fixes [#2](https://github.com/day8/shadow-git-inject/issues/2).
 Thanks to [@schpaa](https://github.com/schpaa) for reporting the issue.
 
